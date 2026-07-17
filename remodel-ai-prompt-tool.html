@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Remodel AI Prompt Tool</title>
+  <style>
+    :root {
+      --bg: #f6f3ee;
+      --panel: #fffdfa;
+      --panel-2: #f1ece5;
+      --text: #241f1a;
+      --muted: #6f675f;
+      --border: #d9d1c7;
+      --accent: #0d6b6f;
+      --accent-2: #084b4e;
+      --shadow: 0 10px 30px rgba(0,0,0,.08);
+      --radius: 16px;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: var(--bg); color: var(--text); line-height: 1.5; }
+    .wrap { max-width: 1200px; margin: 0 auto; padding: 24px; }
+    h1, h2, h3 { line-height: 1.15; margin: 0 0 12px; }
+    p { margin: 0 0 12px; }
+    .hero, .panel, .prompt-card { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); }
+    .hero { padding: 28px; margin-bottom: 20px; }
+    .hero p { color: var(--muted); max-width: 85ch; }
+    .grid { display: grid; grid-template-columns: 320px 1fr; gap: 20px; align-items: start; }
+    .panel { padding: 20px; position: sticky; top: 18px; }
+    label { display: block; font-size: 14px; font-weight: 700; margin-bottom: 6px; }
+    input, select, textarea { width: 100%; border: 1px solid var(--border); border-radius: 12px; background: #fff; color: var(--text); padding: 12px 14px; font: inherit; margin-bottom: 14px; }
+    textarea { min-height: 110px; resize: vertical; }
+    .btn-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 6px; }
+    button { border: 0; border-radius: 12px; padding: 11px 14px; font: inherit; font-weight: 700; cursor: pointer; }
+    .btn-primary { background: var(--accent); color: white; }
+    .btn-primary:hover { background: var(--accent-2); }
+    .btn-secondary { background: var(--panel-2); color: var(--text); }
+    .badges { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+    .badge { font-size: 12px; padding: 6px 9px; border-radius: 999px; background: #e7f1f1; color: #12484a; border: 1px solid #c8dddd; }
+    .results { display: grid; gap: 16px; }
+    .prompt-card { padding: 20px; }
+    .prompt-card h3 { margin-bottom: 8px; }
+    .meta { color: var(--muted); font-size: 14px; margin-bottom: 12px; }
+    .prompt-box { background: #fcfaf7; border: 1px solid var(--border); border-radius: 14px; padding: 14px; white-space: pre-wrap; font-size: 14px; }
+    .card-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+    .note { background: #fff7ea; border: 1px solid #ecd5b0; color: #714111; padding: 14px; border-radius: 14px; margin-top: 14px; font-size: 14px; }
+    .tips { margin-top: 20px; padding: 20px; }
+    ul { margin: 0; padding-left: 18px; }
+    li { margin-bottom: 8px; }
+    .small { font-size: 13px; color: var(--muted); }
+    .inline-code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; background: #efe9e1; padding: 2px 6px; border-radius: 6px; }
+    @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } .panel { position: static; } }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <h1>Remodel AI Prompt Tool</h1>
+      <p>Built for MLS-safe remodel mockups. These prompts are designed to help reduce the common problem where the AI makes rooms look wider, deeper, taller, or otherwise different from the original listing photo.</p>
+      <div class="badges">
+        <span class="badge">Copy/paste prompts</span>
+        <span class="badge">MLS-focused wording</span>
+        <span class="badge">Room-size guardrails</span>
+        <span class="badge">Interior + exterior presets</span>
+      </div>
+    </section>
+    <div class="grid">
+      <aside class="panel">
+        <h2>Prompt Builder</h2>
+        <label for="roomType">Room type</label>
+        <select id="roomType">
+          <option>Living room</option>
+          <option>Kitchen</option>
+          <option>Bathroom</option>
+          <option>Bedroom</option>
+          <option>Dining room</option>
+          <option>Basement</option>
+          <option>Exterior front</option>
+          <option>Exterior rear</option>
+          <option>Office</option>
+          <option>Laundry room</option>
+        </select>
+        <label for="style">Design style</label>
+        <select id="style">
+          <option>Neutral modern</option>
+          <option>Warm contemporary</option>
+          <option>Coastal</option>
+          <option>Farmhouse</option>
+          <option>Traditional refresh</option>
+          <option>Luxury modern</option>
+          <option>Minimal staging</option>
+        </select>
+        <label for="scope">Edit scope</label>
+        <select id="scope">
+          <option>Light cosmetic update</option>
+          <option>Virtual staging only</option>
+          <option>Full remodel concept</option>
+          <option>Exterior cleanup and refresh</option>
+        </select>
+        <label for="mustKeep">Items to keep unchanged</label>
+        <textarea id="mustKeep" placeholder="Example: window size and placement, wall locations, ceiling height, door openings, camera angle, room dimensions"></textarea>
+        <label for="changes">Desired changes</label>
+        <textarea id="changes" placeholder="Example: replace flooring with light oak, paint walls warm white, add recessed lighting, update cabinets"></textarea>
+        <div class="btn-row">
+          <button class="btn-primary" id="buildBtn">Build custom prompt</button>
+          <button class="btn-secondary" id="copyCustomBtn">Copy custom prompt</button>
+        </div>
+        <div class="note">
+          Strongest MLS-safe phrase: <span class="inline-code">do not change room dimensions, wall placement, ceiling height, window size, window placement, door placement, or camera perspective</span>
+        </div>
+      </aside>
+      <main>
+        <div class="results" id="results"></div>
+        <section class="panel tips">
+          <h2>How to get better results</h2>
+          <ul>
+            <li>Use original straight-on listing photos when possible. Wide-angle photos give the AI more room to distort.</li>
+            <li>Tell it what to change and what to leave alone in the same prompt.</li>
+            <li>Use words like “same exact layout,” “same exact perspective,” and “no structural changes.”</li>
+            <li>If it keeps stretching a room, ask for a cosmetic update only instead of a full redesign.</li>
+            <li>For MLS compliance, avoid prompts that imply additions, removed walls, raised ceilings, or expanded square footage unless clearly labeled elsewhere.</li>
+          </ul>
+          <p class="small">This tool does not give legal or MLS policy advice. It is meant to help you write safer visual prompts that stay closer to the real photo.</p>
+        </section>
+      </main>
+    </div>
+  </div>
+  <script>
+    const presets = [
+      {
+        title: 'MLS-safe universal guardrail',
+        type: 'Use before every prompt',
+        text: 'Edit this property photo with realistic high-end improvements, but keep the image fully true to the original structure. Do not change room dimensions, wall placement, ceiling height, floorplan, window size, window placement, door size, door placement, camera angle, lens perspective, or viewing distance. Do not make the room look wider, deeper, taller, or larger than it really is. Keep the exact same layout and proportions. Only apply cosmetic material, color, fixture, lighting, and decor changes.'
+      },
+      {
+        title: 'Interior remodel prompt',
+        type: 'Good for kitchens, baths, living rooms, bedrooms',
+        text: 'Create a realistic interior remodel concept for this exact room while preserving the real size and shape of the space. Keep the same exact walls, openings, windows, ceiling height, floor boundaries, and camera perspective. Do not enlarge the room or alter the architecture. Update only finishes and fixtures with a clean, marketable design: fresh paint, upgraded flooring, modern lighting, tasteful decor, and realistic staging. The result must still look like the same MLS listing photo, just improved.'
+      },
+      {
+        title: 'Virtual staging only',
+        type: 'Safest option when distortion keeps happening',
+        text: 'Virtually stage this exact room without changing any structural or spatial details. Keep all walls, windows, doors, ceiling height, floor dimensions, and perspective exactly the same. Do not widen, deepen, brighten unrealistically, or reshape the room. Add only realistic furniture, rugs, art, lamps, and decor scaled correctly to the existing room so the final image still matches the true MLS photo.'
+      },
+      {
+        title: 'Kitchen refresh',
+        type: 'Cosmetic kitchen upgrade',
+        text: 'Update this kitchen with a realistic cosmetic remodel while keeping the exact same footprint, cabinet layout, wall locations, appliance positions, ceiling height, window placement, and camera angle. Do not expand the kitchen, move walls, raise ceilings, or increase apparent square footage. Change only surfaces and finishes such as cabinet color, counters, backsplash, hardware, sink, faucet, flooring, and lighting. Keep everything proportionally accurate to the original photo.'
+      },
+      {
+        title: 'Bathroom refresh',
+        type: 'Bathroom remodel concept',
+        text: 'Create a realistic bathroom refresh in this exact existing space. Keep the same exact bathroom size, wall placement, tub or shower position, vanity location, mirror placement, ceiling height, and camera perspective. Do not make the bathroom look bigger or wider. Only update materials, fixtures, lighting, paint, tile, and accessories with a clean, believable design that still looks like the same real property photo.'
+      },
+      {
+        title: 'Exterior cleanup',
+        type: 'Front or rear exterior',
+        text: 'Improve this exterior property photo with realistic curb appeal updates while preserving the exact structure, roofline, footprint, lot shape, driveway placement, window placement, door placement, and camera perspective. Do not enlarge the home, change proportions, add square footage, or make the lot appear larger. Only apply believable cosmetic upgrades such as paint, landscaping, lighting, shutters, cleanup, and staging details. The home must remain clearly the same property shown in the original MLS photo.'
+      },
+      {
+        title: 'Strict compliance version',
+        type: 'Use when you need the strongest wording',
+        text: 'Generate a realistic enhancement of this exact listing photo with no structural reinterpretation. Preserve the true architecture, true room size, true wall lengths, true ceiling height, true window and door locations, and true camera viewpoint. Do not alter geometry, depth, width, scale, perspective, lot size, or apparent square footage. No additions, no removed walls, no expanded views, and no exaggerated brightness. Only show cosmetic updates and properly scaled furnishings.'
+      }
+    ];
+    const results = document.getElementById('results');
+    const roomType = document.getElementById('roomType');
+    const style = document.getElementById('style');
+    const scope = document.getElementById('scope');
+    const mustKeep = document.getElementById('mustKeep');
+    const changes = document.getElementById('changes');
+    function copyText(text) {
+      navigator.clipboard.writeText(text).then(() => alert('Prompt copied.')).catch(() => alert('Copy failed. Try selecting the text manually.'));
+    }
+    function buildCustomPrompt() {
+      const keep = mustKeep.value.trim() || 'room dimensions, wall placement, ceiling height, windows, doors, and camera perspective';
+      const editChanges = changes.value.trim() || 'apply tasteful cosmetic upgrades only';
+      return `Create a realistic ${scope.value.toLowerCase()} for this ${roomType.value.toLowerCase()} in a ${style.value.toLowerCase()} style. Keep the image fully true to the original property photo. Preserve the exact same layout, proportions, wall placement, ceiling height, window size and placement, door size and placement, floor boundaries, camera angle, lens perspective, and viewing distance. Do not make the space look larger, wider, deeper, taller, or brighter than it really is. Do not add square footage or structural changes. Keep unchanged: ${keep}. Requested updates: ${editChanges}. The final result must still look like the same real MLS listing photo, with only realistic cosmetic improvements.`;
+    }
+    function createCard(title, meta, text) {
+      const card = document.createElement('section');
+      card.className = 'prompt-card';
+      card.innerHTML = `<h3>${title}</h3><div class="meta">${meta}</div><div class="prompt-box">${text}</div><div class="card-actions"><button class="btn-primary">Copy prompt</button></div>`;
+      card.querySelector('button').addEventListener('click', () => copyText(text));
+      return card;
+    }
+    function renderCards() {
+      results.innerHTML = '';
+      results.appendChild(createCard('Custom prompt', 'Built from your selections', buildCustomPrompt()));
+      presets.forEach(item => results.appendChild(createCard(item.title, item.type, item.text)));
+    }
+    document.getElementById('buildBtn').addEventListener('click', renderCards);
+    document.getElementById('copyCustomBtn').addEventListener('click', () => copyText(buildCustomPrompt()));
+    renderCards();
+  </script>
+</body>
+</html>
